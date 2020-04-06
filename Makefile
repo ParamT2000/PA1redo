@@ -14,14 +14,16 @@ pa1: $(OBJS)
 	$(GCC) $(TESTFALGS) -c $*.c
 
 
-testall: test1 
+testall: testA15 testA1k testA1M testL15 testL1K testL1M memCheckA memCheckL
 
-test1: pa1
+testA15: pa1
 	./pa1 -a inputs/examples/15.b output15.b
 	diff -w output15.b inputs/examples/15sa.b
-test2: pa1
+testA1k: pa1
 	./pa1 -a inputs/examples/1K.b output1k.b
 	diff  output1k.b  inputs/examples/1Ksa.b
+testA1M: pa1
+	./pa1 -a inputs/examples/1M.b 1Msa.b
 
 testL15: pa1
 	./pa1 -l inputs/examples/15.b outTest.b
@@ -31,6 +33,10 @@ testL1K: pa1
 	diff -w outTest.b inputs/examples/1Ksl.b
 testL1M: pa1
 	./pa1 -l inputs/examples/1M.b 1Msl.b
+	diff 1Msl.b 1Msa.b
+testEmpty: pa1
+	./pa1 -a empty OutEmptyA
+	./pa1 -l empty OutEmptyL
 clean: # remove all machine generated files
 	rm -f pa1 *.o output?
 
@@ -45,4 +51,11 @@ memCheckL:
 	--show-leak-kinds=all \
 	--track-origins=yes \
 	--verbose \
-	./pa1 -l inputs/examples/1K.b outTest.b
+	./pa1 -l inputs/examples/1M.b outTest.b
+
+memCheckLE:
+	valgrind --leak-check=full \
+	--show-leak-kinds=all \
+	--track-origins=yes \
+	--verbose \
+	./pa1 -l empty outTest.b

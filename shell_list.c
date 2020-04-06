@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "shell_list.h"
 #include <stdbool.h>
-#include <limits.h> //remove before submission
+
 
 //header stuff:
 typedef struct meg {
@@ -11,7 +11,7 @@ typedef struct meg {
 } megaNode;
 
 //function to print linked list as non binary
-static void printList(Node *);
+//static void printList(Node *);
 static megaNode * divide(megaNode * mega, int, bool,long *);
 static int getLen(Node * curNode);
 static void pushA(Node** head, Node* ins,long *n_comps);
@@ -28,13 +28,12 @@ static void freeMega(megaNode * curMega);
 * RETURN: 
 * DESCRIPTION:   
 *
-************************************************************/Node * List_Load_From_File(char *filename){
+************************************************************/
+Node * List_Load_From_File(char *filename){
     FILE * dataFile = fopen(filename, "rb");
-	
-	
 
 	if(dataFile == NULL){
-		fclose(dataFile);
+		
 		return NULL;
 	}
 
@@ -44,6 +43,7 @@ static void freeMega(megaNode * curMega);
 	int size = numBytes / (sizeof(long));
     
     if(size == 0){
+        fclose(dataFile);
         return NULL;
     }
 
@@ -124,7 +124,7 @@ Node * List_Shellsort(Node *list, long *n_comp) {
             k = (k - 1) / 3;
             dir = !dir;
             megaHead = divide(megaHead,k,dir,n_comp);        
-            printf("\nran k = %d", k);
+            //printf("\nran k = %d", k);
             
         }
 
@@ -137,21 +137,7 @@ Node * List_Shellsort(Node *list, long *n_comp) {
     
 }
 #endif
-/***********************************************************
-* NAME: printList
-* PARAMETERS: Node * 
-* RETURN: void
-* DESCRIPTION:   prints out the list
-*
-************************************************************/
-static void printList(Node* temp){
-    printf("\n values in the list:");
 
-    while(temp != NULL){
-        printf("\n%ld",temp->value );
-        temp = temp ->next;
-    }
-}
 
 /***********************************************************
 * NAME: divide
@@ -174,10 +160,10 @@ static megaNode * divide(megaNode * mega1, int gap, bool dir, long * comps){
     megaNode * oldMega = mega1; // used to be the head but isn't anymore
 
     megaNode * newMegaHead = malloc(sizeof(megaNode));
-    printf("\npointer to newMegaHead %p", (void*)newMegaHead);
+    //printf("\npointer to newMegaHead %p", (void*)newMegaHead);
     newMegaHead ->nextMega = NULL;
     newMegaHead -> nextNode = pop(&(oldMega -> nextNode));
-    printf("\nplaced first new %ld",newMegaHead -> nextNode -> value);
+    //printf("\nplaced first new %ld",newMegaHead -> nextNode -> value);
     oldMega = oldMega ->nextMega;
     megaNode * newTempMega = newMegaHead;
 
@@ -198,13 +184,14 @@ static megaNode * divide(megaNode * mega1, int gap, bool dir, long * comps){
         }
         tempNode -> next = NULL;
         newTempMega -> nextNode = tempNode;
-        printf("\nplaced %ld to sublist %d add: %p",newTempMega->nextNode ->value, counter+1, newTempMega -> nextNode);
+        //printf("\nplaced %ld to sublist %d add: %p",newTempMega->nextNode ->value, counter+1, newTempMega -> nextNode);
     }
 
     newTempMega -> nextMega = newMegaHead; //creates the circular linked list
-    //newTempMega = prevMega;
+    
     // at this point all the new megaNode should have atleast a value.
     tempNode = pop(&(oldMega -> nextNode));
+
     //printf("\n popped %ld first", tempNode-> value);
     newTempMega = newTempMega -> nextMega; // should be equal to newMegaHead
 
@@ -217,7 +204,7 @@ static megaNode * divide(megaNode * mega1, int gap, bool dir, long * comps){
         while((tempNode != NULL)){//keep adding until you are out of nodes
 
             
-            printf("\n Pushed %ld with existing %ld in ascending",tempNode ->value, newTempMega -> nextNode ->value);
+            //printf("\n Pushed %ld with existing %ld in ascending",tempNode ->value, newTempMega -> nextNode ->value);
             pushA(&(newTempMega ->nextNode), tempNode,comps);
             
             oldMega = oldMega -> nextMega;
@@ -230,7 +217,6 @@ static megaNode * divide(megaNode * mega1, int gap, bool dir, long * comps){
             }
             //printf("\n popped %ld in loop", tempNode-> value);
             tempNode -> next = NULL;  // updates the tempNode for the next run  
-            //newTempMega = newTempMega -> nextMega;
         }
     }
     else{ //descending
@@ -238,7 +224,7 @@ static megaNode * divide(megaNode * mega1, int gap, bool dir, long * comps){
         while((tempNode != NULL)){//keep adding until you are out of nodes
 
             
-            printf("\n Pushed %ld with existing %ld in descending",tempNode ->value, newTempMega -> nextNode ->value);
+            //printf("\n Pushed %ld with existing %ld in descending",tempNode ->value, newTempMega -> nextNode ->value);
             pushD(&(newTempMega ->nextNode), tempNode,comps);
             oldMega = oldMega -> nextMega;
 
@@ -421,6 +407,22 @@ static void freeMega(megaNode * curMega){
     return;
 }
 
+/***********************************************************
+* NAME: printList
+* PARAMETERS: Node * 
+* RETURN: void
+* DESCRIPTION:   prints out the list
+*
+************************************************************/
+/*
+static void printList(Node* temp){
+    printf("\n values in the list:");
+
+    while(temp != NULL){
+        printf("\n%ld",temp->value );
+        temp = temp ->next;
+    }
+}*/
 /***********************************************************
 * NAME: Template
 * PARAMETERS: 

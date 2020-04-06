@@ -11,7 +11,7 @@ long *Array_Load_From_File(char *filename, int *size){
 	
 
 	if(dataFile == NULL){
-		fclose(dataFile);
+		
 		return retAdd;
 	}
 
@@ -21,11 +21,14 @@ long *Array_Load_From_File(char *filename, int *size){
 	*size = numBytes / (sizeof(long));
 		
 	retAdd = malloc(*size * sizeof(long));
+	if(retAdd == NULL){
+		return NULL;
+	}
 	
 	fread(retAdd, sizeof(long), *size, dataFile);
 	
 	fclose(dataFile);
-	//why all zeros	
+	
 	
 	return retAdd;
 
@@ -43,21 +46,21 @@ int Array_Save_To_File(char *filename, long *array, int size){
 void Array_Shellsort(long *array, int size, long *n_comp){
 	int k = 0;
 	if (array == NULL || size == 0){
-		printf("Entered null");
+		//printf("Entered null");
 		//? whats the condition		
 	}
 	else{
 		int i = 0; //counter
 		int j = 0; //counter 2
-		printf("Size = %d", size);
+		//printf("Size = %d", size);
 		k = computeK(size);
-		printf("\nk received= %d", k);
+		//printf("\nk received= %d", k);
 		long temp; //temporary swapping variable
 		//shell sort algorithm	
 
 		while(k > 1){
 			k = (k - 1) / 3;
-			printf("\nusing k: %d", k);
+			//printf("\nusing k: %d", k);
 			//printf("\n in loop");
 			
 			for(i = k; i < size; i++){
@@ -77,7 +80,7 @@ void Array_Shellsort(long *array, int size, long *n_comp){
 
 	}
 }
-#if 1
+
 static int computeK(int size){
 	int k = 1;
 	//printf("\nsize rec in computeK = %d",size);
@@ -89,7 +92,7 @@ static int computeK(int size){
 	//printf("\nk returning = %d",k);
 	return k; 
 }
-#endif
+
 
 
 

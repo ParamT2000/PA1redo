@@ -10,7 +10,7 @@ ECE 368
 
 int main(int argc, char * * argv){
 	if (argc < 4){
-		printf("exit");
+		//printf("exit");
 		return EXIT_FAILURE;
 		}
 	int size = 0; //size of file
@@ -23,9 +23,18 @@ int main(int argc, char * * argv){
 		
 		
 		data = Array_Load_From_File(argv[2], &size);
+		if(data == NULL){
+			return EXIT_FAILURE;
+		}
 		Array_Shellsort(data, size, &comps);
 		sorted = Array_Save_To_File(argv[3], data, size);
-		free(data);
+		printf("%ld\n", comps);
+		if(data != NULL){
+			free(data);
+		}
+		if(sorted != size){
+			return EXIT_FAILURE;
+		}
 	}	
 
 	else if(strcmp(argv[1],"-l") == 0){
@@ -36,8 +45,8 @@ int main(int argc, char * * argv){
 
 		size = List_Save_To_File(argv[3], data2);
 
-		printf("\nn_comp %ld", comps);
-		printf("\nsize saved %d\n",size);
+		printf("%ld\n", comps);
+		//printf("\nsize saved %d\n",size);
 		//free the list
 		Node * temp = NULL;
 		
@@ -48,11 +57,7 @@ int main(int argc, char * * argv){
 		}
 	}
 
-	if(sorted == size){
-		printf("\nsorted:%d", sorted);
-		printf("\nSame amount outputted\n");
-	}
-
+	
 	
 	return EXIT_SUCCESS;
 }
