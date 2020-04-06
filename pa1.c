@@ -33,15 +33,19 @@ int main(int argc, char * * argv){
 		data2 = List_Load_From_File(argv[2]);
 		
 		data2 = List_Shellsort(data2, &comps); //should now be sorted
-		
+
+		size = List_Save_To_File(argv[3], data2);
+		printf("\nn_comp %d", comps);
 		//free the list
-		Node * temp;
+		Node * temp = NULL;
+		
 		while(data2 != NULL){
 			temp = data2 -> next;
 			free(data2);
 			data2 = temp;
 		}
 	}
+
 	if(sorted == size){
 		printf("\nsorted:%d", sorted);
 		printf("\nSame amount outputted\n");

@@ -12,17 +12,24 @@ typedef struct meg {
 
 //function to print linked list as non binary
 static void printList(Node *);
-static megaNode * divide(megaNode * mega, int, bool);
+static megaNode * divide(megaNode * mega, int, bool,long *);
 static int getLen(Node * curNode);
-static Node * pushA(Node* head, Node* ins,long *n_comps);
-static Node * pushD(Node* head, Node* ins,long *n_comps);
+//static Node * pushA(Node* head, Node* ins,long *n_comps);
+static void pushA(Node** head, Node* ins,long *n_comps);
+static void pushD(Node** head, Node* ins,long *n_comps);
 static Node* pop(Node** head);
-static int computeK(int size){
+static int computeK(int size);
+static void freeMega(megaNode * curMega);
 
 
 
-
-Node * List_Load_From_File(char *filename){
+/***********************************************************
+* NAME: List_Load_From_File
+* PARAMETERS: 
+* RETURN: 
+* DESCRIPTION:   
+*
+************************************************************/Node * List_Load_From_File(char *filename){
     FILE * dataFile = fopen(filename, "rb");
 	
 	
@@ -64,12 +71,29 @@ Node * List_Load_From_File(char *filename){
 
     return head;
 }
-/*
+/***********************************************************
+* NAME: List_Save_To_File
+* PARAMETERS: 
+* RETURN: 
+* DESCRIPTION:   
+*
+************************************************************/
 int List_Save_To_File(char *filename, Node *list){
-    outFile = fopen(filename,'wb');
-    //fwrite(list,)
+    FILE * outFile = fopen(filename,"w");
+    Node * temp = list;
+    
+    int size = 0;
+
+    while(temp != NULL){
+        fwrite(&(temp->value),sizeof(int),1, outFile);
+        temp = temp -> next;
+        size++;
+    }
+
+return size;
+
 }
-*/
+
 
 /***********************************************************
 * NAME: List_shellsort
@@ -91,18 +115,39 @@ Node * List_Shellsort(Node *list, long *n_comp) {
 
         megaNode * megaHead = malloc(sizeof(megaNode));
         megaHead -> nextNode = list;
-        megaHead -> nextMega = megaNode; // creates a circular list
+        megaHead -> nextMega = megaHead; // creates a circular list
         
         Node * head = NULL;
-        
-        while(k > 1){
-            k = (k -1) / 3;
+        bool dir = 0;
+        //printList(list);
 
-
+        while(k > 1){ //should be 1
+            k = (k - 1) / 3;
+            dir = !dir;
+            megaHead = divide(megaHead,k,dir,n_comp);        
+            printf("\nran k = %d", k);
+            
         }
+
+        #if 0
+
+            megaNode * temp = megaHead ->nextMega;
+            printf("\nFirst one:");
+            printList(megaHead-> nextNode);
+            
+            // while(temp != megaHead){
+            //     printf("\n\nSublist\n");
+            //     printList(temp -> nextNode);
+            //     temp = temp -> nextMega;
+
+            // }
+        #endif
         
         head = megaHead -> nextNode;
-        return head;
+        freeMega(megaHead);
+        //printList(head);
+        return NULL;
+        //return head;
     }
     
 }
@@ -133,7 +178,7 @@ static void printList(Node* temp){
 *
 ************************************************************/
 
-static megaNode * divide(megaNode * mega1, int gap, bool dir){
+static megaNode * divide(megaNode * mega1, int gap, bool dir, long * comps){
     //dir = 1 means to sort ascendingly and dir = 0 means to sort descendingly
 
     // printf("\nOriginal List:");
@@ -144,46 +189,59 @@ static megaNode * divide(megaNode * mega1, int gap, bool dir){
     megaNode * oldMega = mega1; // used to be the head but isn't anymore
 
     megaNode * newMegaHead = malloc(sizeof(megaNode));
+    printf("\npointer to newMegaHead %p", (void*)newMegaHead);
     newMegaHead ->nextMega = NULL;
+    newMegaHead -> nextNode = pop(&(oldMega -> nextNode));
+
     megaNode * newTempMega = newMegaHead;
 
     Node * tempNode = NULL;
-
+    //megaNode * prevMega = NULL;
     int counter = 0;
-    for(counter = 0, counter < gap; counter++){ //creates new megas for new gap
+    for(counter = 1; counter < gap; counter++){ //creates new megas for new gap
         newTempMega -> nextMega = malloc(sizeof(megaNode));
+        //prevMega = newTempMega;
         newTempMega = newTempMega ->nextMega; //update temp 
         newTempMega -> nextMega = NULL;
+        newTempMega -> nextNode = NULL;
 
         tempNode = pop(&(oldMega -> nextNode));
+        tempNode ->next =NULL;
         oldMega = oldMega ->nextMega; //updates location of oldmega
         if(tempNode == NULL){// breaks out of loop. indicates that all values have been added
             break; //this statement should never run because k should always be less than n
         }
         tempNode -> next = NULL;
         newTempMega -> nextNode = tempNode;
+        //printf("\nplaced %ld to sublist %d add: %p",newTempMega->nextNode ->value, counter, newTempMega -> nextNode);
     }
 
     newTempMega -> nextMega = newMegaHead; //creates the circular linked list
-
+    //newTempMega = prevMega;
     // at this point all the new megaNode should have atleast a value.
     tempNode = pop(&(oldMega -> nextNode));
-
+    //printf("\n popped %ld first", tempNode-> value);
     newTempMega = newTempMega -> nextMega; // should be equal to newMegaHead
 
     //start loading the remaining nodes into the new one
+    if(gap == 1){
+        dir = 1; //ensures last one is in ascending order
+    }
     if(dir){//ascending
 
         while((tempNode != NULL)){//keep adding until you are out of nodes
 
-            newTempMega -> nextNode = pushA(newTempMega ->nextNode, tempNode);
-            oldMega = oldMega -> next;
+            //newTempMega -> nextNode = pushA((newTempMega ->nextNode), tempNode,comps);
+            //printf("\n Pushed %ld with existing %ld",tempNode ->value, newTempMega -> nextNode ->value);
+            pushA(&(newTempMega ->nextNode), tempNode,comps);
+            
+            oldMega = oldMega -> nextMega;
 
             tempNode = pop(&(oldMega -> nextNode));
-
             if(tempNode == NULL){
                 break;
             }
+            //printf("\n popped %ld in loop", tempNode-> value);
             tempNode -> next = NULL;  // updates the tempNode for the next run  
             newTempMega = newTempMega -> nextMega;
         }
@@ -192,8 +250,9 @@ static megaNode * divide(megaNode * mega1, int gap, bool dir){
 
         while((tempNode != NULL)){//keep adding until you are out of nodes
 
-            newTempMega -> nextNode = pushD(newTempMega ->nextNode, tempNode);
-            oldMega = oldMega -> next;
+            //newTempMega -> nextNode = pushD(newTempMega ->nextNode, tempNode,comps);
+            pushD(&(newTempMega ->nextNode), tempNode,comps);
+            oldMega = oldMega -> nextMega;
 
             tempNode = pop(&(oldMega -> nextNode));
             
@@ -206,6 +265,7 @@ static megaNode * divide(megaNode * mega1, int gap, bool dir){
     }
 
     freeMega(oldMega);
+    //printf("\npointer to newMegaHead %p at end ", (void*)newMegaHead);
     return newMegaHead;
 
 }
@@ -235,27 +295,35 @@ static int getLen(Node * curNode){
 * DESCRIPTION:  pushes to the stack in ascending (enqueue)
 *
 ************************************************************/
-static Node * pushA(Node* head, Node* ins,long *n_comps){
+static void pushA(Node** head, Node* ins,long *n_comps){
 
-    Node * temp = head;
+    if(*head == NULL){//modified for the double pointer
+        ins -> next = NULL;
+        (*head) = ins;
+        return;
+    }
+    Node * temp = NULL;
+    temp = *head; 
 
     //edge case where the node to be inserted should be the new head
     (*n_comps)++;
-    if(head -> value >= ins -> value){
-        ins -> next = head;
-        return ins;
+    if((*head) -> value >= ins -> value){
+        ins -> next = *head;
+        (*head) = ins;
+        return;
     }
 
-    while((temp -> next != NULL) && ((temp -> next -> value) < (ins -> value))){
+    while((temp -> next != NULL) && (((temp -> next) -> value) < (ins -> value))){
         //printf("\nMoving past %ld to insert %ld", temp -> value, ins -> value);
         temp = temp -> next;
         (*n_comps)++;
-        
     }
+
     ins -> next = temp -> next;
     temp -> next = ins;
-
-    return head;
+    
+    return;
+    //return head;
 
 }
 
@@ -266,24 +334,35 @@ static Node * pushA(Node* head, Node* ins,long *n_comps){
 * DESCRIPTION:   pushes to the stack in descending (enqueue)
 *
 ************************************************************/
-static Node * pushD(Node * head, Node* ins,long *n_comps){
-    Node * temp = head;
+//static Node * pushD(Node * head, Node* ins,long *n_comps){
+static void pushD(Node **head, Node * ins, long *n_comps){
+
+    if(*head == NULL){//modified for the double pointer
+        (*head) = ins;
+        return;
+    }
+    Node * temp = NULL;
+    temp = *head; 
 
     //edge case where the node to be inserted should be the new head
     (*n_comps)++;
-    if(head -> value <= ins -> value){
-        ins -> next = head;
-        return ins;
+    if((*head) -> value <= ins -> value){
+        ins -> next = *head;
+        (*head) = ins;
+        return;
     }
 
-    while((temp -> next != NULL )&& (temp -> next ->value > ins -> value)){
+    while((temp -> next != NULL) && (((temp -> next) -> value) > (ins -> value))){
+        //printf("\nMoving past %ld to insert %ld", temp -> value, ins -> value);
         temp = temp -> next;
         (*n_comps)++;
+        
     }
-
     ins -> next = temp -> next;
     temp -> next = ins;
-    return head;
+    
+    return;
+    //return head;
 
 }
 
@@ -344,12 +423,12 @@ static void freeMega(megaNode * curMega){
     }
     else{
         megaNode * temp2 = NULL;
-        while((tempMega != curMega) &&){ //frees everything up till curNode
+        while((tempMega != curMega)){ //frees everything up till curNode
             temp2 = tempMega;
             tempMega = tempMega -> nextMega;
             free(temp2);
         }
-        free(curNode);
+        free(curMega);
     }
     return;
 }
