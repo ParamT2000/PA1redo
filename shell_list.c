@@ -12,7 +12,7 @@ typedef struct meg {
 
 //function to print linked list as non binary
 static void printList(Node *);
-static megaNode * divide(megaNode * mega, int kInitial, int kFinal, bool);
+static megaNode * divide(megaNode * mega, int, bool);
 static int getLen(Node * curNode);
 static Node * pushA(Node* head, Node* ins,long *n_comps);
 static Node * pushD(Node* head, Node* ins,long *n_comps);
@@ -88,14 +88,20 @@ Node * List_Shellsort(Node *list, long *n_comp) {
 
         int size = getLen(list);//placeholder
         int k = computeK(size);
+
+        megaNode * megaHead = malloc(sizeof(megaNode));
+        megaHead -> nextNode = list;
+        megaHead -> nextMega = megaNode; // creates a circular list
+        
         Node * head = NULL;
-        divide
+        
         while(k > 1){
             k = (k -1) / 3;
 
 
         }
         
+        head = megaHead -> nextNode;
         return head;
     }
     
@@ -127,49 +133,80 @@ static void printList(Node* temp){
 *
 ************************************************************/
 
-static megaNode * divide(megaNode * mega1, int kInitial, int kFinal, bool dir){
-    printf("\nOriginal List:");
-    printList(meag1 ->nextNode);
+static megaNode * divide(megaNode * mega1, int gap, bool dir){
+    //dir = 1 means to sort ascendingly and dir = 0 means to sort descendingly
+
+    // printf("\nOriginal List:");
+    // printList(mega1 ->nextNode);
     
-    // first case where the Ki is smaller than the Kf
+    
     // creates all the megaNodes and assigns the proper lists to them
-    if(kInitial > kFinal){
-        
-    }
-    else{ //kInitial is smaller than kFinal
-        int needMegas = kFinal - kInitial; // how many more megaNodes needed to split
-        int counter = 0;
+    megaNode * oldMega = mega1; // used to be the head but isn't anymore
 
-        megaNode * tempMega = mega1;
-        Node * tHeadNode = mega1 -> nextNode;
-        Node * tempNode = NULL;
+    megaNode * newMegaHead = malloc(sizeof(megaNode));
+    newMegaHead ->nextMega = NULL;
+    megaNode * newTempMega = newMegaHead;
 
-        for(counter = 0, counter < needMegas;counter++){
-            tempMega -> nextMega = malloc(sizeof(megaNode));
-            tempMega = tempMega ->nextMega;
-            tempMega -> nextMega = NULL;
+    Node * tempNode = NULL;
 
-            tempNode = pop(&tHeadNode);
+    int counter = 0;
+    for(counter = 0, counter < gap; counter++){ //creates new megas for new gap
+        newTempMega -> nextMega = malloc(sizeof(megaNode));
+        newTempMega = newTempMega ->nextMega; //update temp 
+        newTempMega -> nextMega = NULL;
 
-            tempNode -> next = NULL;
-            tempMega -> nextNode = tempNode;
+        tempNode = pop(&(oldMega -> nextNode));
+        oldMega = oldMega ->nextMega; //updates location of oldmega
+        if(tempNode == NULL){// breaks out of loop. indicates that all values have been added
+            break; //this statement should never run because k should always be less than n
         }
+        tempNode -> next = NULL;
+        newTempMega -> nextNode = tempNode;
+    }
 
-        tempNode = pop(&tHeadNode);
-       
-        tempMega = mega1;
+    newTempMega -> nextMega = newMegaHead; //creates the circular linked list
 
-        // first will be ascending
-        while(tempNode != NULL){
-            tempMega -> nextNode = pushA(tempMega ->nextNode, tempNode);
-            tempNode = pop(&tHeadNode);
+    // at this point all the new megaNode should have atleast a value.
+    tempNode = pop(&(oldMega -> nextNode));
+
+    newTempMega = newTempMega -> nextMega; // should be equal to newMegaHead
+
+    //start loading the remaining nodes into the new one
+    if(dir){//ascending
+
+        while((tempNode != NULL)){//keep adding until you are out of nodes
+
+            newTempMega -> nextNode = pushA(newTempMega ->nextNode, tempNode);
+            oldMega = oldMega -> next;
+
+            tempNode = pop(&(oldMega -> nextNode));
+
             if(tempNode == NULL){
                 break;
             }
             tempNode -> next = NULL;  // updates the tempNode for the next run  
+            newTempMega = newTempMega -> nextMega;
         }
-
     }
+    else{ //descending
+
+        while((tempNode != NULL)){//keep adding until you are out of nodes
+
+            newTempMega -> nextNode = pushD(newTempMega ->nextNode, tempNode);
+            oldMega = oldMega -> next;
+
+            tempNode = pop(&(oldMega -> nextNode));
+            
+            if(tempNode == NULL){
+                break;
+            }
+            tempNode -> next = NULL;  // updates the tempNode for the next run  
+            newTempMega = newTempMega -> nextMega;
+        }
+    }
+
+    freeMega(oldMega);
+    return newMegaHead;
 
 }
 
@@ -285,6 +322,36 @@ static int computeK(int size){
 	}
 	//printf("\nk returning = %d",k);
 	return k; 
+}
+
+/***********************************************************
+* NAME: freeMega
+* PARAMETERS: megaNode *
+* RETURN: void
+* DESCRIPTION: takes in any meganode assuming it is circularly linke
+* saves the next value and as long as it isnt equal to itself
+*proceeds with a normal freeing algorithm   
+*
+************************************************************/
+static void freeMega(megaNode * curMega){
+    if(curMega == NULL){
+        return;
+    }
+
+    megaNode * tempMega = curMega -> nextMega;
+    if(tempMega == curMega){
+        free(curMega);
+    }
+    else{
+        megaNode * temp2 = NULL;
+        while((tempMega != curMega) &&){ //frees everything up till curNode
+            temp2 = tempMega;
+            tempMega = tempMega -> nextMega;
+            free(temp2);
+        }
+        free(curNode);
+    }
+    return;
 }
 
 /***********************************************************
