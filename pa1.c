@@ -35,7 +35,9 @@ int main(int argc, char * * argv){
 		data2 = List_Shellsort(data2, &comps); //should now be sorted
 
 		size = List_Save_To_File(argv[3], data2);
-		printf("\nn_comp %d", comps);
+
+		printf("\nn_comp %ld", comps);
+		printf("\nsize saved %d\n",size);
 		//free the list
 		Node * temp = NULL;
 		

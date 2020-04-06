@@ -25,10 +25,12 @@ test2: pa1
 
 testL15: pa1
 	./pa1 -l inputs/examples/15.b outTest.b
+	diff -w outTest.b inputs/examples/15sl.b
 testL1K: pa1
-	
+	./pa1 -l inputs/examples/1K.b outTest.b
+	diff -w outTest.b inputs/examples/1Ksl.b
 testL1M: pa1
-	./pa1 -l inputs/examples/1M.b outTest.b
+	./pa1 -l inputs/examples/1M.b 1Msl.b
 clean: # remove all machine generated files
 	rm -f pa1 *.o output?
 
@@ -37,10 +39,10 @@ memCheckA:
 	--show-leak-kinds=all \
 	--track-origins=yes \
 	--verbose \
-	./pa1 -a inputs/examples/1K.b output1k.b
+	./pa1 -a inputs/examples/1M.b 1Msa.b
 memCheckL:
 	valgrind --leak-check=full \
 	--show-leak-kinds=all \
 	--track-origins=yes \
 	--verbose \
-	./pa1 -l inputs/examples/15.b outTest.b
+	./pa1 -l inputs/examples/1K.b outTest.b

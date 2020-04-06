@@ -14,7 +14,6 @@ typedef struct meg {
 static void printList(Node *);
 static megaNode * divide(megaNode * mega, int, bool,long *);
 static int getLen(Node * curNode);
-//static Node * pushA(Node* head, Node* ins,long *n_comps);
 static void pushA(Node** head, Node* ins,long *n_comps);
 static void pushD(Node** head, Node* ins,long *n_comps);
 static Node* pop(Node** head);
@@ -85,11 +84,11 @@ int List_Save_To_File(char *filename, Node *list){
     int size = 0;
 
     while(temp != NULL){
-        fwrite(&(temp->value),sizeof(int),1, outFile);
+        fwrite(&(temp->value),sizeof(long),1, outFile);
         temp = temp -> next;
         size++;
     }
-
+    fclose(outFile);
 return size;
 
 }
@@ -129,25 +128,11 @@ Node * List_Shellsort(Node *list, long *n_comp) {
             
         }
 
-        #if 0
-
-            megaNode * temp = megaHead ->nextMega;
-            printf("\nFirst one:");
-            printList(megaHead-> nextNode);
-            
-            // while(temp != megaHead){
-            //     printf("\n\nSublist\n");
-            //     printList(temp -> nextNode);
-            //     temp = temp -> nextMega;
-
-            // }
-        #endif
         
         head = megaHead -> nextNode;
         freeMega(megaHead);
         //printList(head);
-        return NULL;
-        //return head;
+        return head;
     }
     
 }
@@ -192,15 +177,15 @@ static megaNode * divide(megaNode * mega1, int gap, bool dir, long * comps){
     printf("\npointer to newMegaHead %p", (void*)newMegaHead);
     newMegaHead ->nextMega = NULL;
     newMegaHead -> nextNode = pop(&(oldMega -> nextNode));
-
+    printf("\nplaced first new %ld",newMegaHead -> nextNode -> value);
+    oldMega = oldMega ->nextMega;
     megaNode * newTempMega = newMegaHead;
 
     Node * tempNode = NULL;
-    //megaNode * prevMega = NULL;
     int counter = 0;
     for(counter = 1; counter < gap; counter++){ //creates new megas for new gap
         newTempMega -> nextMega = malloc(sizeof(megaNode));
-        //prevMega = newTempMega;
+        
         newTempMega = newTempMega ->nextMega; //update temp 
         newTempMega -> nextMega = NULL;
         newTempMega -> nextNode = NULL;
@@ -213,7 +198,7 @@ static megaNode * divide(megaNode * mega1, int gap, bool dir, long * comps){
         }
         tempNode -> next = NULL;
         newTempMega -> nextNode = tempNode;
-        //printf("\nplaced %ld to sublist %d add: %p",newTempMega->nextNode ->value, counter, newTempMega -> nextNode);
+        printf("\nplaced %ld to sublist %d add: %p",newTempMega->nextNode ->value, counter+1, newTempMega -> nextNode);
     }
 
     newTempMega -> nextMega = newMegaHead; //creates the circular linked list
@@ -231,36 +216,39 @@ static megaNode * divide(megaNode * mega1, int gap, bool dir, long * comps){
 
         while((tempNode != NULL)){//keep adding until you are out of nodes
 
-            //newTempMega -> nextNode = pushA((newTempMega ->nextNode), tempNode,comps);
-            //printf("\n Pushed %ld with existing %ld",tempNode ->value, newTempMega -> nextNode ->value);
+            
+            printf("\n Pushed %ld with existing %ld in ascending",tempNode ->value, newTempMega -> nextNode ->value);
             pushA(&(newTempMega ->nextNode), tempNode,comps);
             
             oldMega = oldMega -> nextMega;
 
             tempNode = pop(&(oldMega -> nextNode));
+            newTempMega = newTempMega -> nextMega;
             if(tempNode == NULL){
+                
                 break;
             }
             //printf("\n popped %ld in loop", tempNode-> value);
             tempNode -> next = NULL;  // updates the tempNode for the next run  
-            newTempMega = newTempMega -> nextMega;
+            //newTempMega = newTempMega -> nextMega;
         }
     }
     else{ //descending
 
         while((tempNode != NULL)){//keep adding until you are out of nodes
 
-            //newTempMega -> nextNode = pushD(newTempMega ->nextNode, tempNode,comps);
+            
+            printf("\n Pushed %ld with existing %ld in descending",tempNode ->value, newTempMega -> nextNode ->value);
             pushD(&(newTempMega ->nextNode), tempNode,comps);
             oldMega = oldMega -> nextMega;
 
             tempNode = pop(&(oldMega -> nextNode));
-            
+            newTempMega = newTempMega -> nextMega;
             if(tempNode == NULL){
                 break;
             }
             tempNode -> next = NULL;  // updates the tempNode for the next run  
-            newTempMega = newTempMega -> nextMega;
+            
         }
     }
 
